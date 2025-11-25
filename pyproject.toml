@@ -1,0 +1,208 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "printaudit"
+dynamic = ["version"]
+description = "PrintAudit - Modern CUPS page_log analyzer for print accounting and cost allocation"
+readme = { file = "README.md", content-type = "text/markdown" }
+authors = [
+    { name = "PrintAudit Contributors", email = "listas.vhs@gmail.com" },
+]
+maintainers = [
+    { name = "Victor Hugo dos Santos (VHS)", email = "listas.vhs@gmail.com" },
+]
+license = { text = "MIT" }
+keywords = [
+    "cups",
+    "printing",
+    "audit",
+    "analysis",
+    "accounting",
+    "cost-tracking",
+    "system-administration",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: System :: Logging",
+    "Topic :: Office/Business",
+    "Topic :: Utilities",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "rich>=13.0.0",
+    "click>=8.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pre-commit>=3.0.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "isort>=5.12.0",
+    "mypy>=1.0.0",
+]
+test = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+]
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.0.0",
+]
+
+[project.scripts]
+printaudit = "printaudit.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/vhsantos/printaudit"
+Documentation = "https://github.com/vhsantos/printaudit#readme"
+Repository = "https://github.com/vhsantos/printaudit"
+"Bug Tracker" = "https://github.com/vhsantos/printaudit/issues"
+"Changelog" = "https://github.com/vhsantos/printaudit/releases"
+
+[project.entry-points."printaudit.outputs"]
+console = "printaudit.outputs.console:ConsoleOutput"
+html = "printaudit.outputs.html_report:HtmlOutput"
+csv = "printaudit.outputs.csv_writer:CsvWriter"
+json = "printaudit.outputs.json_output:JsonOutput"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["printaudit*"]
+exclude = ["printaudit.tests*"]
+
+[tool.setuptools.package-data]
+"printaudit" = ["py.typed"]
+
+# Tool configurations
+[tool.black]
+line-length = 79
+target-version = ["py310", "py311", "py312"]
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  | \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+  # files
+  | poetry\.lock
+  | pyproject\.toml
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 79
+multi_line_output = 3
+known_first_party = ["printaudit"]
+
+[tool.flake8]
+max-line-length = 79
+extend-ignore = "E203, W503"
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    "*.egg-info",
+    "*.pyc",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".tox",
+    ".venv",
+]
+per-file-ignores = [
+    "__init__.py:F401",
+    "tests/*:S101",  # allow assert in tests
+]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = [
+    "tests.*",
+    "printaudit.tests.*",
+]
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--cov=printaudit",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+    "-ra",
+]
+testpaths = ["tests"]
+filterwarnings = [
+    "error",
+    "ignore::DeprecationWarning",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+]
+
+[tool.coverage.run]
+source = ["printaudit"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+    "*/version.py",
+]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\\\bProtocol\\\\b:",
+    "@(abc\\\\.)?abstractmethod",
+]
