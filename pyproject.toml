@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=68", "wheel", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -90,6 +90,8 @@ exclude = ["printaudit.tests*"]
 
 [tool.setuptools.package-data]
 "printaudit" = ["py.typed"]
+
+[tool.setuptools_scm]
 
 # Tool configurations
 [tool.black]
@@ -203,6 +205,6 @@ exclude_lines = [
     "raise NotImplementedError",
     "if 0:",
     "if __name__ == .__main__.:",
-    "class .*\\\\bProtocol\\\\b:",
-    "@(abc\\\\.)?abstractmethod",
+    "class .*\\bProtocol\\b:",
+    "@(abc\\.)?abstractmethod",
 ]
