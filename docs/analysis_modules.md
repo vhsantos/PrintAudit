@@ -62,9 +62,9 @@ Analyzes usage by printer/queue name.
 ```txt
 QUEUE ANALYSIS
 Queue          %Req  %Pages  Req   Pages
-MP_301         45.2   52.1   2467  4201
-RICOH_Aficio   30.1   35.2   1643  2838
-MP_201         24.7   12.7   1348  1025
+Printer01      45.2   52.1   2467  4201
+Printer02      30.1   35.2   1643  2838
+Printer03      24.7   12.7   1348  1025
 ```
 
 **CSV Columns**: `queue,requests_pct,pages_pct,requests,pages`
@@ -126,10 +126,10 @@ Per-user printing statistics.
 
 ```txt
 USER ANALYSIS
-User            Req   Pages  Pages/Req
-contabilidad1   234   1793   7.66
-rkusch          89    476    5.35
-csalas          12    675   56.25
+User        Req   Pages  Pages/Req
+accounting1 234   1793   7.66
+frank       89    476    5.35
+bob         12    675   56.25
 ```
 
 **CSV Columns**: `user,requests,pages,pages_per_request`
@@ -292,8 +292,8 @@ Department/label-based cost allocation with currency-agnostic calculation.
 
 Cost calculation uses three rate sources (in precedence order):
 
-1. **Label-specific rates** (`label.contabilidad=0.03`)
-2. **Printer-specific rates** (`printer.MP_301=0.01`)
+1. **Label-specific rates** (`label.accounting=0.03`)
+2. **Printer-specific rates** (`printer.Printer01=0.01`)
 3. **Default rate** (`default=0.02`)
 
 Cost labels are assigned via `[cost_rules]` section mapping users/queues to labels.
@@ -310,13 +310,13 @@ Cost labels are assigned via `[cost_rules]` section mapping users/queues to labe
 
 **CLI**:
 
-```
+```txt
 COST ANALYSIS
-Label        Pages  Cost      Top Users
-contabilidad 4418   CLP$110,450  contabilidad1:1793, contabilidad3:1094
-caja         675    CLP$20,250   csalas:675
-sistemas     448    CLP$0        isaavedra:448
-unassigned   2279   CLP$0        rkusch:476, jcardenas:466
+Label      Pages  Cost      Top Users
+accounting 4418   CLP$110,450  accounting1:1793, accounting3:1094
+sales      675    CLP$20,250   bob:675
+it         448    CLP$0        alice:448
+unassigned 2279   CLP$0        frank:476, grace:466
 ```
 
 **CSV Columns**: `label,pages,amount,top_users,top_queues`
@@ -336,8 +336,8 @@ Jobs are assigned to cost labels based on `[cost_rules]`:
 
 ```ini
 [cost_rules]
-contabilidad=contabilidad1,contabilidad2,contabilidad3
-caja=csalas
+accounting=accounting1,accounting2,accounting3
+sales=bob
 ```
 
 If no rule matches, jobs are assigned to `"unassigned"`.
@@ -580,8 +580,8 @@ default=0.02
 currency_symbol=CLP$
 
 [cost_rules]
-accounting=contabilidad1,contabilidad2,contabilidad3
-sales=csalas
+accounting=accounting1,accounting2,accounting3
+sales=bob
 ```
 
 ### Advanced Cost Setup
@@ -590,14 +590,14 @@ sales=csalas
 [costs]
 default=0.05
 currency_symbol=$
-printer.MP_301=0.03
-printer.RICOH_Aficio_MP_2000=0.08
+printer.Printer01=0.03
+printer.Printer02=0.08
 label.accounting=0.02
 
 [cost_rules]
-accounting=contabilidad1,contabilidad2
-sales=csalas
-it=rkusch,jcardenas
+accounting=accounting1,accounting2
+sales=bob
+it=frank,grace
 ```
 
 ## Common Use Cases
@@ -682,7 +682,7 @@ This is normal when printer drivers don't report duplex mode to CUPS. The `sides
 
 ```ini
 [cost_rules]
-accounting=contabilidad1,contabilidad2,contabilidad3,contabilidad4
+accounting=accounting1,accounting2,accounting3,accounting4
 ```
 
 ### Missing Data in Reports

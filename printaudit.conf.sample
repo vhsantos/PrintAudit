@@ -32,15 +32,15 @@ currency_symbol=
 currency_code=
 
 # Printer-specific rates (optional)
-# printer.MP_301=0.01
-# printer.HP_2000=0.05
+# printer.Printer01=0.01
+# printer.Printer02=0.05
 
 # Cost-label specific rates (optional)
-# label.contabilidad=0.03
+# label.accounting=0.03
 # label.marketing=0.05
 # label.IT=0.04
 
 [cost_rules]
 # Map jobs to cost labels based on printer/user/job/host substrings.
-# contabilidad=contabilidad1,contabilidad2,contabilidad3,contabilidad4,contabilidad6
-# caja=csalas
+# accounting=accounting1,accounting2,accounting3,accounting4,accounting5
+# sales=bob

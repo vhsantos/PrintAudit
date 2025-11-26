@@ -1,0 +1,161 @@
+Sample PrintAudit output
+Real user- and printer names have been replaced with generic examples
+
+$ printaudit -c /etc/printaudit/printaudit.conf
+
+EXECUTIVE SUMMARY
+Requests: 5458 | Pages: 8064 | Window: 2025-04-01 -> 2025-04-30
+
+QUEUE ANALYSIS
+  HP_LaserJet_Pro_M404dn |  76.7% |  76.0% | 4186 | 6132
+  Canon_PIXMA_MX492 |  15.3% |  13.0% | 838 | 1051
+  Brother_MFC_L2750DW |   8.0% |  10.9% | 434 | 881
+
+Queue-User breakdown:
+  HP_LaserJet_Pro_M404dn    accounting1          1789 pages
+  HP_LaserJet_Pro_M404dn    accounting3           706 pages
+  HP_LaserJet_Pro_M404dn    accounting4           705 pages
+  Canon_PIXMA_MX492         bob                   675 pages
+  HP_LaserJet_Pro_M404dn    accounting2           566 pages
+  HP_LaserJet_Pro_M404dn    frank                 476 pages
+  HP_LaserJet_Pro_M404dn    grace                 466 pages
+  Brother_MFC_L2750DW       alice                 448 pages
+  Brother_MFC_L2750DW       accounting3           388 pages
+  HP_LaserJet_Pro_M404dn    henry                 325 pages
+
+USER ANALYSIS
+  accounting1 | 674 | 1793 |  2.66
+  accounting3 | 554 | 1094 |  1.97
+  accounting4 | 583 | 705 |  1.21
+  bob | 613 | 675 |  1.10
+  accounting2 | 505 | 569 |  1.13
+  frank | 378 | 476 |  1.26
+  grace | 391 | 466 |  1.19
+  alice | 413 | 448 |  1.08
+  henry | 280 | 325 |  1.16
+  ivy | 129 | 268 |  2.08
+  jack | 220 | 257 |  1.17
+  accounting5 | 250 | 257 |  1.03
+  diana | 188 | 229 |  1.22
+  charlie | 48 | 124 |  2.58
+  eve | 76 | 110 |  1.45
+  ... (21 rows)
+
+TEMPORAL ANALYSIS
+Hour usage:
+  07:00: 5 req / 5 pages !
+  08:00: 50 req / 63 pages !
+  09:00: 654 req / 843 pages
+  10:00: 902 req / 1136 pages
+  11:00: 784 req / 909 pages
+  12:00: 642 req / 781 pages
+  13:00: 262 req / 279 pages
+  14:00: 47 req / 48 pages
+  15:00: 755 req / 1996 pages
+  16:00: 638 req / 1219 pages
+  17:00: 533 req / 565 pages
+  18:00: 179 req / 192 pages
+  19:00: 7 req / 28 pages
+  20:00: 3 req / 12 pages
+  21:00: 1 req / 2 pages
+  22:00: 0 req / 0 pages
+  23:00: 0 req / 0 pages
+
+Daily usage:
+  2025-04-01: 331 req / 578 pages
+  2025-04-02: 274 req / 311 pages
+  2025-04-03: 426 req / 472 pages
+  2025-04-04: 333 req / 361 pages
+  2025-04-07: 337 req / 348 pages
+  2025-04-08: 216 req / 259 pages
+  2025-04-09: 313 req / 359 pages
+  2025-04-10: 204 req / 240 pages
+  2025-04-11: 264 req / 387 pages
+  2025-04-14: 308 req / 501 pages
+  2025-04-15: 364 req / 423 pages
+  2025-04-16: 275 req / 320 pages
+  2025-04-17: 207 req / 222 pages
+  2025-04-21: 236 req / 264 pages
+  2025-04-22: 141 req / 149 pages
+  2025-04-23: 176 req / 200 pages
+  2025-04-24: 190 req / 214 pages
+  2025-04-25: 196 req / 222 pages
+  2025-04-28: 216 req / 1736 pages
+  2025-04-29: 196 req / 223 pages
+  2025-04-30: 255 req / 275 pages
+
+JOB ANALYSIS
+  0-10 |  99.5% | 5433
+  11-20 |   0.3% | 15
+  31-40 |   0.1% | 3
+  41-50 |   0.0% | 1
+  51-100 |   0.1% | 3
+  101-200 |   0.0% | 2
+  200+ |   0.0% | 1
+
+Copies:
+  1 | 100.0% | 5458
+
+COST ANALYSIS
+  accounting | 4418 | $110.45 | accounting1:1793, accounting3:1094, accounting4:705, accounting2:569, accounting5:257
+  unassigned | 2279 | $51.40 | frank:476, grace:466, henry:325, ivy:268, jack:257
+  sales | 675 | $20.25 | bob:675
+  it | 448 | $6.72 | alice:448
+  platform | 244 | $6.40 | eve:110, charlie:89, diana:45
+
+MEDIA & CLIENT ANALYSIS
+  unknown | 8064
+
+Top clients:
+  192.168.10.54 | 1793
+  192.168.10.61 | 1094
+  192.168.10.63 | 705
+  192.168.10.32 | 675
+  192.168.10.62 | 569
+  192.168.10.29 | 476
+  192.168.10.27 | 466
+  192.168.10.28 | 448
+  192.168.10.25 | 325
+  192.168.10.48 | 268
+  192.168.10.35 | 257
+  192.168.10.66 | 257
+  192.168.10.34 | 229
+  192.168.10.26 | 124
+  192.168.10.30 | 89
+  ... (22 rows)
+
+Document types:
+  frx | 2187
+  unknown | 1730
+  rpt | 1459
+  xls | 757
+  xlsx | 739
+  pdf | 405
+  cgi | 326
+  html | 206
+  docx | 112
+  txt | 74
+  doc | 25
+  xlsm | 20
+  pptx | 15
+  csv | 7
+  htm | 2
+
+Duplex:
+  unknown | 8064
+
+Artifacts generated:
+  /var/spool/printaudit/reports/queue.csv
+  /var/spool/printaudit/reports/queue_user.csv
+  /var/spool/printaudit/reports/users.csv
+  /var/spool/printaudit/reports/hourly.csv
+  /var/spool/printaudit/reports/daily.csv
+  /var/spool/printaudit/reports/job_buckets.csv
+  /var/spool/printaudit/reports/copy_buckets.csv
+  /var/spool/printaudit/reports/cost.csv
+  /var/spool/printaudit/reports/clients.csv
+  /var/spool/printaudit/reports/document_types.csv
+  /var/spool/printaudit/reports/media.csv
+  /var/spool/printaudit/reports/duplex.csv
+  /var/spool/printaudit/reports/printaudit.html
+

@@ -102,11 +102,11 @@ currency_symbol=CLP$
 currency_code=CLP
 
 # Printer-specific rates (optional)
-printer.MP_301=0.01
-printer.RICOH_Aficio_MP_2000=0.05
+printer.Printer01=0.01
+printer.Printer02=0.05
 
 # Department/label-specific rates (optional)
-label.contabilidad=0.03
+label.accounting=0.03
 label.marketing=0.05
 label.IT=0.04
 ```
@@ -116,10 +116,10 @@ label.IT=0.04
 ```ini
 [cost_rules]
 # Map users/queues to cost labels for department allocation
-contabilidad=contabilidad1,contabilidad2,contabilidad3
-caja=csalas
-plataforma=jrogel,cskarmeta,csaavedra
-sistemas=isaavedra
+accounting=accounting1,accounting2,accounting3
+sales=bob
+platform=charlie,diana,eve
+it=alice
 ```
 
 ## Usage
