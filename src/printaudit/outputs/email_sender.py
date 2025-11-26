@@ -18,13 +18,15 @@ class EmailOutput(OutputModule):
 
         client = EmailClient(settings)
         attachments = self._select_attachments()
-        subject = "PrintAudit report"
+        subject = settings.subject or "PrintAudit Report"
         totals = report.totals
+        start_date = totals.first_event.date()
+        end_date = totals.last_event.date()
         body = (
-            f"PrintAudit summary\\n"
-            f"Requests: {totals.requests}\\n"
-            f"Pages: {totals.pages}\\n"
-            f"Window: {totals.first_event} -> {totals.last_event}\\n"
+            "PrintAudit summary\n"
+            f"Requests: {totals.requests}\n"
+            f"Pages: {totals.pages}\n"
+            f"Window: {start_date} -> {end_date}\n"
         )
         try:
             client.send_report(subject, body, attachments)

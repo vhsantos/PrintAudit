@@ -37,7 +37,12 @@ class EmailClient:
 
         message = EmailMessage()
         message["Subject"] = subject
-        message["From"] = self.settings.smtp_user or "printaudit@localhost"
+        from_addr = (
+            self.settings.from_address
+            or self.settings.smtp_user
+            or "printaudit@localhost"
+        )
+        message["From"] = from_addr
         message["To"] = ", ".join(self.settings.recipients)
         message.set_content(body)
 

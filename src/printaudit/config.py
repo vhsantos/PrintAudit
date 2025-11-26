@@ -38,6 +38,8 @@ class EmailSettings:
     recipients: list[str] = field(default_factory=list)
     attach_csv: bool = False
     attach_html: bool = False
+    subject: str = "PrintAudit Report"
+    from_address: str = ""
 
 
 @dataclass
@@ -140,6 +142,8 @@ def _load_email_settings(email: EmailSettings, raw: dict[str, str]) -> None:
         "email.recipients": ("recipients", _split_csv),
         "email.attach_csv": ("attach_csv", _bool),
         "email.attach_html": ("attach_html", _bool),
+        "email.subject": ("subject", str),
+        "email.from": ("from_address", str),
     }
 
     for key, (attr, caster) in mapping.items():

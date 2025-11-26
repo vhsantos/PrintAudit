@@ -10,6 +10,7 @@ cli_mode=rich
 cli_max_rows=15
 csv_dir=/var/spool/printaudit/reports
 html_path=/var/spool/printaudit/reports/printaudit.html
+html_use_chartjs=false
 
 [email]
 enabled=false
@@ -19,6 +20,8 @@ smtp_user=
 smtp_password=
 use_tls=false
 recipients=
+subject=PrintAudit Report
+from=
 attach_csv=true
 attach_html=true
 
