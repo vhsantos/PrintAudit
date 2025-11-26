@@ -91,112 +91,37 @@ def discover_config_file(explicit_path: Path | None = None) -> Path:
 
 
 def parse_config(path: Path | None = None) -> Config:
-    """Load configuration from disk."""
+    """Load configuration from disk (strictly section-based)."""
 
     conf_path = discover_config_file(path)
-    raw: dict[str, str] = {}
-
-    # Lightweight parser with optional [section] support.
-    #
-    # - Lines before any section behave like the legacy flat key=value format.
-    # - Lines under [email] are exposed as "email.<key>" to preserve the
-    #   existing EmailSettings mapping.
-    # - Other sections use "section.key" as the raw key.
-    current_section: str | None = None
-    with conf_path.open("r", encoding="utf-8") as handle:
-        for lineno, line in enumerate(handle, start=1):
-            stripped = line.strip()
-            if not stripped or stripped.startswith("#"):
-                continue
-
-            # Section header, e.g. [core], [email], [costs]
-            if stripped.startswith("[") and stripped.endswith("]"):
-                name = stripped[1:-1].strip().lower()
-                current_section = name or None
-                continue
-
-            if "=" not in stripped:
-                raise ConfigError(
-                    f"Invalid config line {lineno} in {conf_path}: {line!r}"
-                )
-            key, value = stripped.split("=", 1)
-            key = key.strip().lower()
-            value = value.strip()
-
-            if current_section is None:
-                full_key = key
-            elif current_section == "email":
-                full_key = f"email.{key}"
-            else:
-                full_key = f"{current_section}.{key}"
-
-            raw[full_key] = value
+    raw = _read_config_file(conf_path)
 
     config = Config()
-    # Core settings live under the [core] section.
-    if "core.page_log_path" in raw:
-        config.page_log_path = Path(raw["core.page_log_path"])
-    if "core.work_start" in raw:
-        config.work_start = int(raw["core.work_start"])
-    if "core.work_end" in raw:
-        config.work_end = int(raw["core.work_end"])
-    if "core.enabled_sections" in raw:
-        config.enabled_sections = _split_csv(raw["core.enabled_sections"])
-    if "core.outputs" in raw:
-        config.outputs = _split_csv(raw["core.outputs"])
-    if "core.cli_mode" in raw:
-        config.cli_mode = raw["core.cli_mode"]
-    if "core.cli_max_rows" in raw:
-        config.cli_max_rows = int(raw["core.cli_max_rows"])
-    if "core.csv_dir" in raw:
-        config.csv_dir = Path(raw["core.csv_dir"])
-    if "core.html_path" in raw:
-        config.html_path = Path(raw["core.html_path"])
 
-    # Costs section: [costs]
-    if "costs.default" in raw:
-        config.cost_default = float(raw["costs.default"])
-    if "costs.currency_symbol" in raw:
-        config.currency_symbol = raw["costs.currency_symbol"]
-    if "costs.currency_code" in raw:
-        config.currency_code = raw["costs.currency_code"]
+    # Simple key → attribute mappings
+    mappings = [
+        # [core]
+        ("core.page_log_path", "page_log_path", Path),
+        ("core.work_start", "work_start", int),
+        ("core.work_end", "work_end", int),
+        ("core.enabled_sections", "enabled_sections", _split_csv),
+        ("core.outputs", "outputs", _split_csv),
+        ("core.cli_mode", "cli_mode", str),
+        ("core.cli_max_rows", "cli_max_rows", int),
+        ("core.csv_dir", "csv_dir", Path),
+        ("core.html_path", "html_path", Path),
+        # [costs]
+        ("costs.default", "cost_default", float),
+        ("costs.currency_symbol", "currency_symbol", str),
+        ("costs.currency_code", "currency_code", str),
+    ]
 
-    for key, value in raw.items():
-        # Printer-specific rates: costs.printer.<queue>
-        if key.startswith("costs.printer."):
-            _, _, printer_name = key.partition("costs.printer.")
-            if printer_name:
-                # Store printer keys normalized to lowercase
-                config.cost_printer_rates[printer_name.lower()] = float(value)
-            continue
+    for key, attr, caster in mappings:
+        if key in raw:
+            setattr(config, attr, caster(raw[key]))
 
-        # Label-specific rates: costs.label.<cost_label>
-        if key.startswith("costs.label."):
-            _, _, label_name = key.partition("costs.label.")
-            if label_name:
-                config.cost_label_rates[label_name.lower()] = float(value)
-            continue
-
-        # Cost inference rules:
-        # - preferred: [cost_rules] section → cost_rules.<name>
-        # - accept costs.cost_rule.<name> and legacy top-level cost_rule.<name>
-        if key.startswith("cost_rules."):
-            _, _, rule_name = key.partition("cost_rules.")
-            if rule_name:
-                config.cost_inference_rules[rule_name] = value
-            continue
-
-        if key.startswith("costs.cost_rule."):
-            _, _, rule_name = key.partition("costs.cost_rule.")
-            if rule_name:
-                config.cost_inference_rules[rule_name] = value
-            continue
-
-        if key.startswith("cost_rule."):
-            _, _, rule_name = key.partition(".")
-            if rule_name:
-                config.cost_inference_rules[rule_name] = value
-
+    _parse_cost_rates(config, raw)
+    _parse_cost_rules(config, raw)
     _load_email_settings(config.email, raw)
 
     return config
@@ -218,3 +143,71 @@ def _load_email_settings(email: EmailSettings, raw: dict[str, str]) -> None:
     for key, (attr, caster) in mapping.items():
         if key in raw:
             setattr(email, attr, caster(raw[key]))
+
+
+def _read_config_file(conf_path: Path) -> dict[str, str]:
+    """Read a config file into a flat key/value mapping with section keys."""
+
+    raw: dict[str, str] = {}
+    current_section: str | None = None
+
+    with conf_path.open("r", encoding="utf-8") as handle:
+        for lineno, line in enumerate(handle, start=1):
+            stripped = line.strip()
+            if not stripped or stripped.startswith("#"):
+                continue
+
+            # Section header, e.g. [core], [email], [costs], [cost_rules]
+            if stripped.startswith("[") and stripped.endswith("]"):
+                name = stripped[1:-1].strip().lower()
+                current_section = name or None
+                continue
+
+            if "=" not in stripped:
+                raise ConfigError(
+                    f"Invalid config line {lineno} in {conf_path}: {line!r}"
+                )
+
+            if current_section is None:
+                raise ConfigError(
+                    f"Config key outside section at line {lineno} in "
+                    f"{conf_path}: {line!r}"
+                )
+
+            key, value = stripped.split("=", 1)
+            key = key.strip().lower()
+            value = value.strip()
+
+            if current_section == "email":
+                full_key = f"email.{key}"
+            else:
+                full_key = f"{current_section}.{key}"
+
+            raw[full_key] = value
+
+    return raw
+
+
+def _parse_cost_rates(config: Config, raw: dict[str, str]) -> None:
+    """Parse printer and label cost rates from the [costs] section."""
+
+    for key, value in raw.items():
+        if key.startswith("costs.printer."):
+            printer = key.replace("costs.printer.", "").lower()
+            if printer:
+                config.cost_printer_rates[printer] = float(value)
+        elif key.startswith("costs.label."):
+            label = key.replace("costs.label.", "").lower()
+            if label:
+                config.cost_label_rates[label] = float(value)
+
+
+def _parse_cost_rules(config: Config, raw: dict[str, str]) -> None:
+    """Parse cost inference rules from the [cost_rules] section only."""
+
+    prefix = "cost_rules."
+    for key, value in raw.items():
+        if key.startswith(prefix):
+            rule_name = key.replace(prefix, "")
+            if rule_name:
+                config.cost_inference_rules[rule_name] = value
