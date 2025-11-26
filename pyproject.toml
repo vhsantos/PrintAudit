@@ -91,8 +91,6 @@ exclude = ["printaudit.tests*"]
 [tool.setuptools.package-data]
 "printaudit" = ["py.typed"]
 
-[tool.setuptools_scm]
-
 # Tool configurations
 [tool.black]
 line-length = 79
