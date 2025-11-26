@@ -22,24 +22,12 @@ jobs:
         pip install
         build
         --user
-    - name: Check git tags for versioning
-      run: |
-        git tag -l
-        git describe --tags --always || echo "No tags found"
     - name: Build a binary wheel and a source tarball
       run: python3 -m build
     - name: Verify package metadata
       run: |
         python3 -m pip install twine --user
         python3 -m twine check dist/*
-    - name: Show package info
-      run: |
-        ls -lh dist/
-        python3 -m pip install pkginfo --user
-        for pkg in dist/*; do
-          echo "=== $pkg ==="
-          python3 -m pkginfo "$pkg" || true
-        done
     - name: Store the distribution packages
       uses: actions/upload-artifact@v4
       with:
@@ -87,18 +75,7 @@ jobs:
       with:
         name: python-package-distributions
         path: dist/
-    - name: Show packages before upload
-      run: |
-        ls -lh dist/
-        echo "Package files to upload:"
-        for pkg in dist/*; do
-          echo "  - $pkg ($(du -h "$pkg" | cut -f1))"
-        done
     - name: Publish distribution 📦 to TestPyPI
       uses: pypa/gh-action-pypi-publish@release/v1
-      env:
-        TWINE_VERBOSE: 1
       with:
         repository-url: https://test.pypi.org/legacy/
-        verbose: true
-        print-hash: true
