@@ -67,11 +67,11 @@ docs = [
 printaudit = "printaudit.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/vhsantos/printaudit"
-Documentation = "https://github.com/vhsantos/printaudit#readme"
-Repository = "https://github.com/vhsantos/printaudit"
-"Bug Tracker" = "https://github.com/vhsantos/printaudit/issues"
-"Changelog" = "https://github.com/vhsantos/printaudit/releases"
+Homepage = "https://github.com/vhsantos/PrintAudit"
+Documentation = "https://github.com/vhsantos/PrintAudit#readme"
+Repository = "https://github.com/vhsantos/PrintAudit"
+"Bug Tracker" = "https://github.com/vhsantos/PrintAudit/issues"
+"Changelog" = "https://github.com/vhsantos/PrintAudit/releases"
 
 [project.entry-points."printaudit.outputs"]
 console = "printaudit.outputs.console:ConsoleOutput"
