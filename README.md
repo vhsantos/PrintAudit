@@ -243,6 +243,15 @@ Contributions are welcome! Please see the documentation for:
 - [Creating Output Modules](docs/creating_output_modules.md)
 - [Analysis Modules Reference](docs/analysis_modules.md)
 
+## Automation
+
+### Logrotate Integration
+
+PrintAudit can be integrated with logrotate to automatically generate reports when CUPS logs are rotated. See [Logrotate Setup Guide](docs/logrotate_setup.md) for detailed examples including:
+
+- Weekly and monthly rotation configurations
+- Automated email reporting
+
 ## Support
 
 - **Issues**: [GitHub Issues](https://github.com/vhsantos/PrintAudit/issues)
