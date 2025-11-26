@@ -60,6 +60,7 @@ class Config:
     cli_max_rows: int = 15
     csv_dir: Path = Path("./reports")
     html_path: Path = Path("./reports/printaudit.html")
+    html_use_chartjs: bool = False
     cost_inference_rules: dict[str, str] = field(default_factory=dict)
     email: EmailSettings = field(default_factory=EmailSettings)
     # Cost calculation (optional)
@@ -110,6 +111,7 @@ def parse_config(path: Path | None = None) -> Config:
         ("core.cli_max_rows", "cli_max_rows", int),
         ("core.csv_dir", "csv_dir", Path),
         ("core.html_path", "html_path", Path),
+        ("core.html_use_chartjs", "html_use_chartjs", _bool),
         # [costs]
         ("costs.default", "cost_default", float),
         ("costs.currency_symbol", "currency_symbol", str),

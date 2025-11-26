@@ -55,63 +55,56 @@ class HtmlOutput(OutputModule):
 
         row_limit = self.context.config.cli_max_rows
 
-        return f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <title>PrintAudit Report</title>
-  <style>
-    body {{ font-family: Arial, sans-serif; margin: 2rem; background:#f5f5f5; }}
-    section {{ margin-bottom: 2rem; background:#fff; padding:1rem 1.5rem; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); }}
-    table {{ width:100%; border-collapse:collapse; margin-top:1rem; }}
-    th, td {{ text-align:left; padding:0.35rem 0.5rem; border-bottom:1px solid #ddd; }}
-    h1 {{ margin-bottom:0; }}
-    canvas {{ display:block; width:100%; max-width:100%; height:160px; }}
-  </style>
-</head>
-<body>
-  <h1>PrintAudit Executive Summary</h1>
-  <p>Requests: {summary["requests"]} | Pages: {summary["pages"]} | Window: {summary["start"]} → {summary["end"]}</p>
+        # Choose chart implementation: external Chart.js or built-in canvas.
+        if getattr(self.context.config, "html_use_chartjs", False):
+            charts_block = f"""
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const data = {data_json};
+    document.addEventListener('DOMContentLoaded', function() {{
+      const queueCtx = document.getElementById('queueChart');
+      if (queueCtx) {{
+        new Chart(queueCtx, {{
+          type: 'bar',
+          data: {{
+            labels: data.queue.slice(0, 10).map(row => row.queue),
+            datasets: [{{
+              label: 'Pages',
+              data: data.queue.slice(0, 10).map(row => row.pages),
+              backgroundColor: '#4a90e2'
+            }}]
+          }},
+          options: {{
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {{ legend: {{ display: false }} }}
+          }}
+        }});
+      }}
 
-  <section>
-    <h2>Queue Analysis</h2>
-    <canvas id="queueChart"></canvas>
-    {self._table_html(["Queue", "%Req", "%Pages", "Req", "Pages"], data["queue"][:10], ["queue","requests_pct","pages_pct","requests","pages"])}
-  </section>
-
-  <section>
-    <h2>User Analysis</h2>
-    {self._table_html(["User","Requests","Pages","Pages/Request"], data["users"][:row_limit], ["user","requests","pages","pages_per_request"])}
-  </section>
-
-  <section>
-    <h2>Temporal Analysis</h2>
-    <canvas id="hourlyChart"></canvas>
-  </section>
-
-  <section>
-    <h2>Job & Copy Distribution</h2>
-    {self._table_html(["Bucket","% Requests","Requests"], data["job_buckets"], ["label","pct_requests","request_count"])}
-    <h3>Copies</h3>
-    {self._table_html(["Bucket","% Requests","Requests"], data["copy_buckets"], ["label","pct_requests","request_count"])}
-  </section>
-
-  <section>
-    <h2>Cost Analysis</h2>
-    {self._table_html(["Label","Pages","Amount","Top Users","Top Queues"], data["cost"], ["label","pages","amount","per_user","per_queue"])}
-  </section>
-
-  <section>
-    <h2>Media & Clients</h2>
-    {self._table_html(["Media","Pages"], data["media"], ["label","pages"])}
-    <h3>Clients</h3>
-    {self._table_html(["Client","Pages"], data["clients"][:row_limit], ["label","pages"])}
-    <h3>Document Types</h3>
-    {self._table_html(["Extension","Pages"], data["document_types"], ["label","pages"])}
-    <h3>Duplex</h3>
-    {self._table_html(["Mode","Pages"], data["duplex"], ["label","pages"])}
-  </section>
-
+      const hourlyCtx = document.getElementById('hourlyChart');
+      if (hourlyCtx) {{
+        new Chart(hourlyCtx, {{
+          type: 'bar',
+          data: {{
+            labels: data.hourly.map(point => point.key),
+            datasets: [{{
+              label: 'Pages',
+              data: data.hourly.map(point => point.pages),
+              backgroundColor: '#36a2eb'
+            }}]
+          }},
+          options: {{
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {{ legend: {{ display: false }} }}
+          }}
+        }});
+      }}
+    }});
+  </script>"""
+        else:
+            charts_block = f"""
   <script>
     const data = {data_json};
 
@@ -173,7 +166,8 @@ class HtmlOutput(OutputModule):
         // Draw label centered under the bar (no rotation)
         const maxLabelWidth = barWidth - 8;
         let text = label;
-        while (text.length > 0 && ctx.measureText(text).width > maxLabelWidth) {{
+        while (text.length > 0 &&
+               ctx.measureText(text).width > maxLabelWidth) {{
           text = text.slice(0, -1);
         }}
         if (text !== label && text.length > 1) {{
@@ -195,7 +189,71 @@ class HtmlOutput(OutputModule):
       const hourlyPages = data.hourly.map(point => point.pages);
       drawBarChart('hourlyChart', hourlyLabels, hourlyPages);
     }});
-  </script>
+  </script>"""
+
+        return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>PrintAudit Report</title>
+  <style>
+    body {{ font-family: Arial, sans-serif; margin: 2rem; background:#f5f5f5; }}
+    section {{ margin-bottom: 2rem; background:#fff; padding:1rem 1.5rem; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); }}
+    table {{ width:100%; border-collapse:collapse; margin-top:1rem; }}
+    th, td {{ text-align:left; padding:0.35rem 0.5rem; border-bottom:1px solid #ddd; }}
+    h1 {{ margin-bottom:0; }}
+    .chart-container {{ position:relative; width:100%; height:200px; }}
+    canvas {{ display:block; width:100%; max-width:100%; height:100%; }}
+  </style>
+</head>
+<body>
+  <h1>PrintAudit Executive Summary</h1>
+  <p>Requests: {summary["requests"]} | Pages: {summary["pages"]} | Window: {summary["start"]} → {summary["end"]}</p>
+
+  <section>
+    <h2>Queue Analysis</h2>
+    <div class="chart-container">
+      <canvas id="queueChart"></canvas>
+    </div>
+    {self._table_html(["Queue", "%Req", "%Pages", "Req", "Pages"], data["queue"][:10], ["queue","requests_pct","pages_pct","requests","pages"])}
+  </section>
+
+  <section>
+    <h2>User Analysis</h2>
+    {self._table_html(["User","Requests","Pages","Pages/Request"], data["users"][:row_limit], ["user","requests","pages","pages_per_request"])}
+  </section>
+
+  <section>
+    <h2>Temporal Analysis</h2>
+    <div class="chart-container">
+      <canvas id="hourlyChart"></canvas>
+    </div>
+  </section>
+
+  <section>
+    <h2>Job & Copy Distribution</h2>
+    {self._table_html(["Bucket","% Requests","Requests"], data["job_buckets"], ["label","pct_requests","request_count"])}
+    <h3>Copies</h3>
+    {self._table_html(["Bucket","% Requests","Requests"], data["copy_buckets"], ["label","pct_requests","request_count"])}
+  </section>
+
+  <section>
+    <h2>Cost Analysis</h2>
+    {self._table_html(["Label","Pages","Amount","Top Users","Top Queues"], data["cost"], ["label","pages","amount","per_user","per_queue"])}
+  </section>
+
+  <section>
+    <h2>Media & Clients</h2>
+    {self._table_html(["Media","Pages"], data["media"], ["label","pages"])}
+    <h3>Clients</h3>
+    {self._table_html(["Client","Pages"], data["clients"][:row_limit], ["label","pages"])}
+    <h3>Document Types</h3>
+    {self._table_html(["Extension","Pages"], data["document_types"], ["label","pages"])}
+    <h3>Duplex</h3>
+    {self._table_html(["Mode","Pages"], data["duplex"], ["label","pages"])}
+  </section>
+
+{charts_block}
 </body>
 </html>
 """  # noqa: E501,E231
@@ -226,4 +284,6 @@ class HtmlOutput(OutputModule):
 
 
 def _fmt_dt(value: datetime | None) -> str:
-    return value.isoformat() if value else "-"
+    if not value:
+        return "-"
+    return value.date().isoformat()
