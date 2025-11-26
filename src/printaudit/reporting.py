@@ -23,6 +23,9 @@ def run_report(
         cost_rules=config.cost_inference_rules,
         work_start=config.work_start,
         work_end=config.work_end,
+        cost_default=config.cost_default,
+        cost_printer_rates=config.cost_printer_rates,
+        cost_label_rates=config.cost_label_rates,
     )
     page_log = Path(config.page_log_path)
 

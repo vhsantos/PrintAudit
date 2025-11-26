@@ -94,11 +94,12 @@ class CsvOutput(OutputModule):
             ),
             (
                 "cost",
-                ["label", "pages", "top_users", "top_queues"],
+                ["label", "pages", "amount", "top_users", "top_queues"],
                 (
                     [
                         stat.label,
                         stat.pages,
+                        stat.amount,
                         ";".join(f"{u}:{p}" for u, p in stat.per_user),
                         ";".join(f"{q}:{p}" for q, p in stat.per_queue),
                     ]

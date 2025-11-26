@@ -156,12 +156,25 @@ class CliOutput(OutputModule):
             [
                 stat.label,
                 stat.pages,
+                self._format_currency(stat.amount),
                 ", ".join(f"{u}:{p}" for u, p in stat.per_user),
             ]
             for stat in report.cost_stats
         ]
-        self._emit_table(out, ["Label", "Pages", "Top Users"], rows, rich)
+        self._emit_table(
+            out, ["Label", "Pages", "Cost", "Top Users"], rows, rich
+        )
         print("", file=out)
+
+    def _format_currency(self, amount: float) -> str:
+        config = self.context.config
+        symbol = getattr(config, "currency_symbol", "")
+        code = getattr(config, "currency_code", "")
+        if symbol:
+            return f"{symbol}{amount:,.0f}"
+        if code:
+            return f"{amount:,.0f} {code}"
+        return f"{amount:,.2f}"
 
     def _print_media_section(
         self, report: AnalysisReport, out, rich: bool

@@ -40,6 +40,7 @@ class HtmlOutput(OutputModule):
                 {
                     "label": stat.label,
                     "pages": stat.pages,
+                    "amount": stat.amount,
                     "per_user": stat.per_user,
                     "per_queue": stat.per_queue,
                 }
@@ -97,7 +98,7 @@ class HtmlOutput(OutputModule):
 
   <section>
     <h2>Cost Analysis</h2>
-    {self._table_html(["Label","Pages","Top Users","Top Queues"], data["cost"], ["label","pages","per_user","per_queue"])}
+    {self._table_html(["Label","Pages","Amount","Top Users","Top Queues"], data["cost"], ["label","pages","amount","per_user","per_queue"])}
   </section>
 
   <section>

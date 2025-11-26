@@ -62,6 +62,12 @@ class Config:
     html_path: Path = Path("./reports/printaudit.html")
     cost_inference_rules: dict[str, str] = field(default_factory=dict)
     email: EmailSettings = field(default_factory=EmailSettings)
+    # Cost calculation (optional)
+    cost_default: float = 0.0
+    cost_printer_rates: dict[str, float] = field(default_factory=dict)
+    cost_label_rates: dict[str, float] = field(default_factory=dict)
+    currency_symbol: str = ""
+    currency_code: str = ""
 
 
 def discover_config_file(explicit_path: Path | None = None) -> Path:
@@ -127,29 +133,69 @@ def parse_config(path: Path | None = None) -> Config:
             raw[full_key] = value
 
     config = Config()
-    if "page_log_path" in raw:
-        config.page_log_path = Path(raw["page_log_path"])
-    if "work_start" in raw:
-        config.work_start = int(raw["work_start"])
-    if "work_end" in raw:
-        config.work_end = int(raw["work_end"])
-    if "enabled_sections" in raw:
-        config.enabled_sections = _split_csv(raw["enabled_sections"])
-    if "outputs" in raw:
-        config.outputs = _split_csv(raw["outputs"])
-    if "cli_mode" in raw:
-        config.cli_mode = raw["cli_mode"]
-    if "cli_max_rows" in raw:
-        config.cli_max_rows = int(raw["cli_max_rows"])
-    if "csv_dir" in raw:
-        config.csv_dir = Path(raw["csv_dir"])
-    if "html_path" in raw:
-        config.html_path = Path(raw["html_path"])
+    # Core settings live under the [core] section.
+    if "core.page_log_path" in raw:
+        config.page_log_path = Path(raw["core.page_log_path"])
+    if "core.work_start" in raw:
+        config.work_start = int(raw["core.work_start"])
+    if "core.work_end" in raw:
+        config.work_end = int(raw["core.work_end"])
+    if "core.enabled_sections" in raw:
+        config.enabled_sections = _split_csv(raw["core.enabled_sections"])
+    if "core.outputs" in raw:
+        config.outputs = _split_csv(raw["core.outputs"])
+    if "core.cli_mode" in raw:
+        config.cli_mode = raw["core.cli_mode"]
+    if "core.cli_max_rows" in raw:
+        config.cli_max_rows = int(raw["core.cli_max_rows"])
+    if "core.csv_dir" in raw:
+        config.csv_dir = Path(raw["core.csv_dir"])
+    if "core.html_path" in raw:
+        config.html_path = Path(raw["core.html_path"])
+
+    # Costs section: [costs]
+    if "costs.default" in raw:
+        config.cost_default = float(raw["costs.default"])
+    if "costs.currency_symbol" in raw:
+        config.currency_symbol = raw["costs.currency_symbol"]
+    if "costs.currency_code" in raw:
+        config.currency_code = raw["costs.currency_code"]
 
     for key, value in raw.items():
+        # Printer-specific rates: costs.printer.<queue>
+        if key.startswith("costs.printer."):
+            _, _, printer_name = key.partition("costs.printer.")
+            if printer_name:
+                # Store printer keys normalized to lowercase
+                config.cost_printer_rates[printer_name.lower()] = float(value)
+            continue
+
+        # Label-specific rates: costs.label.<cost_label>
+        if key.startswith("costs.label."):
+            _, _, label_name = key.partition("costs.label.")
+            if label_name:
+                config.cost_label_rates[label_name.lower()] = float(value)
+            continue
+
+        # Cost inference rules:
+        # - preferred: [cost_rules] section → cost_rules.<name>
+        # - accept costs.cost_rule.<name> and legacy top-level cost_rule.<name>
+        if key.startswith("cost_rules."):
+            _, _, rule_name = key.partition("cost_rules.")
+            if rule_name:
+                config.cost_inference_rules[rule_name] = value
+            continue
+
+        if key.startswith("costs.cost_rule."):
+            _, _, rule_name = key.partition("costs.cost_rule.")
+            if rule_name:
+                config.cost_inference_rules[rule_name] = value
+            continue
+
         if key.startswith("cost_rule."):
             _, _, rule_name = key.partition(".")
-            config.cost_inference_rules[rule_name] = value
+            if rule_name:
+                config.cost_inference_rules[rule_name] = value
 
     _load_email_settings(config.email, raw)
 

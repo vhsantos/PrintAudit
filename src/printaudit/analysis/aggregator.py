@@ -71,6 +71,7 @@ class CostStat:
     pages: int
     per_user: list[tuple[str, int]] = field(default_factory=list)
     per_queue: list[tuple[str, int]] = field(default_factory=list)
+    amount: float = 0.0
 
 
 @dataclass
@@ -130,6 +131,9 @@ class UsageAggregator:
         cost_rules: dict[str, str] | None = None,
         work_start: int = 7,
         work_end: int = 22,
+        cost_default: float = 0.0,
+        cost_printer_rates: dict[str, float] | None = None,
+        cost_label_rates: dict[str, float] | None = None,
     ):
         self.totals = Totals()
         self.queue_requests: Counter[str] = Counter()
@@ -157,6 +161,9 @@ class UsageAggregator:
         self.cost_rules = cost_rules or {}
         self.work_start = work_start
         self.work_end = work_end
+        self.cost_default = cost_default
+        self.cost_printer_rates = cost_printer_rates or {}
+        self.cost_label_rates = cost_label_rates or {}
 
     def ingest(self, entry: parser.LogEntry) -> None:
         self.totals.requests += 1
@@ -323,15 +330,37 @@ class UsageAggregator:
     def _build_cost_stats(self) -> list[CostStat]:
         stats = []
         for label, pages in self.cost_pages.most_common():
+            amount = 0.0
+            if (
+                self.cost_default
+                or self.cost_printer_rates
+                or self.cost_label_rates
+            ):
+                queue_pages = self.cost_queue_pages[label]
+                for queue, q_pages in queue_pages.items():
+                    rate = self._resolve_rate(label, queue)
+                    amount += q_pages * rate
             stats.append(
                 CostStat(
                     label=label,
                     pages=pages,
                     per_user=_top_items(self.cost_user_pages[label]),
                     per_queue=_top_items(self.cost_queue_pages[label]),
+                    amount=amount,
                 )
             )
         return stats
+
+    def _resolve_rate(self, label: str, queue: str) -> float:
+        """Determine effective rate for a given cost label and queue."""
+
+        label_key = label.lower()
+        queue_key = queue.lower()
+        if label_key in self.cost_label_rates:
+            return self.cost_label_rates[label_key]
+        if queue_key in self.cost_printer_rates:
+            return self.cost_printer_rates[queue_key]
+        return self.cost_default
 
     def _simple_stats(self, counter: Counter[str]) -> list[SimpleStat]:
         return [
