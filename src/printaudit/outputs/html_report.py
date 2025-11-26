@@ -66,7 +66,7 @@ class HtmlOutput(OutputModule):
     table {{ width:100%; border-collapse:collapse; margin-top:1rem; }}
     th, td {{ text-align:left; padding:0.35rem 0.5rem; border-bottom:1px solid #ddd; }}
     h1 {{ margin-bottom:0; }}
-    canvas {{ max-width: 100%; }}
+    canvas {{ display:block; width:100%; max-width:100%; height:160px; }}
   </style>
 </head>
 <body>
@@ -75,7 +75,7 @@ class HtmlOutput(OutputModule):
 
   <section>
     <h2>Queue Analysis</h2>
-    <canvas id="queueChart" height="160"></canvas>
+    <canvas id="queueChart"></canvas>
     {self._table_html(["Queue", "%Req", "%Pages", "Req", "Pages"], data["queue"][:10], ["queue","requests_pct","pages_pct","requests","pages"])}
   </section>
 
@@ -86,7 +86,7 @@ class HtmlOutput(OutputModule):
 
   <section>
     <h2>Temporal Analysis</h2>
-    <canvas id="hourlyChart" height="160"></canvas>
+    <canvas id="hourlyChart"></canvas>
   </section>
 
   <section>
@@ -114,32 +114,87 @@ class HtmlOutput(OutputModule):
 
   <script>
     const data = {data_json};
+
     function drawBarChart(ctxId, labels, values) {{
       const canvas = document.getElementById(ctxId);
-      if (!canvas) return;
+      if (!canvas || !labels.length) return;
+
       const ctx = canvas.getContext('2d');
-      const width = canvas.width;
-      const height = canvas.height;
+      const dpr = window.devicePixelRatio || 1;
+
+      // Get the display size in CSS pixels
+      const rect = canvas.getBoundingClientRect();
+      const displayWidth = Math.floor((rect.width || 600) * dpr);
+      const displayHeight = Math.floor((rect.height || 160) * dpr);
+
+      // Resize internal buffer if needed, then scale to DPR
+      if (canvas.width !== displayWidth || canvas.height !== displayHeight) {{
+        canvas.width = displayWidth;
+        canvas.height = displayHeight;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }}
+
+      const cssWidth = rect.width || 600;
+      const cssHeight = rect.height || 160;
+
+      ctx.clearRect(0, 0, cssWidth, cssHeight);
       const maxVal = Math.max(...values, 1);
-      ctx.clearRect(0, 0, width, height);
-      const barWidth = width / labels.length;
+      const barWidth = cssWidth / labels.length;
+
       ctx.fillStyle = '#4a90e2';
-      ctx.font = '10px sans-serif';
+      ctx.textBaseline = 'top';
+
+      // Adapt font size and label density to available bar width
+      const baseFontSize = Math.max(8, Math.min(12, barWidth * 0.4));
+      ctx.font = baseFontSize + 'px sans-serif';
+
+      let labelStep = 1;
+      if (barWidth < 25) {{
+        labelStep = 2;  // show every 2nd label on narrow layouts
+      }}
+      if (barWidth < 12) {{
+        labelStep = 3;  // show every 3rd label on very narrow layouts
+      }}
+
       labels.forEach((label, index) => {{
         const value = values[index];
-        const barHeight = (value / maxVal) * (height - 20);
-        const x = index * barWidth + 5;
-        const y = height - barHeight - 10;
-        ctx.fillRect(x, y, barWidth - 10, barHeight);
-        ctx.fillText(label, x, height - 2);
+        const barHeight = (value / maxVal) * (cssHeight - 28);
+        const x = index * barWidth + 4;
+        const y = cssHeight - barHeight - 20;
+
+        // Draw bar
+        ctx.fillRect(x, y, barWidth - 8, barHeight);
+
+        // Optionally skip some labels to avoid overlap
+        if (index % labelStep !== 0) {{
+          return;
+        }}
+
+        // Draw label centered under the bar (no rotation)
+        const maxLabelWidth = barWidth - 8;
+        let text = label;
+        while (text.length > 0 && ctx.measureText(text).width > maxLabelWidth) {{
+          text = text.slice(0, -1);
+        }}
+        if (text !== label && text.length > 1) {{
+          text = text.slice(0, -1) + "…";
+        }}
+        const textWidth = ctx.measureText(text).width;
+        const textX = x + (barWidth - 8 - textWidth) / 2;
+        const textY = cssHeight - 15;
+        ctx.fillText(text, textX, textY);
       }});
     }}
-    const queueLabels = data.queue.slice(0, 10).map(row => row.queue);
-    const queuePages = data.queue.slice(0, 10).map(row => row.pages);
-    drawBarChart('queueChart', queueLabels, queuePages);
-    const hourlyLabels = data.hourly.map(point => point.key);
-    const hourlyPages = data.hourly.map(point => point.pages);
-    drawBarChart('hourlyChart', hourlyLabels, hourlyPages);
+
+    document.addEventListener('DOMContentLoaded', function() {{
+      const queueLabels = data.queue.slice(0, 10).map(row => row.queue);
+      const queuePages = data.queue.slice(0, 10).map(row => row.pages);
+      drawBarChart('queueChart', queueLabels, queuePages);
+
+      const hourlyLabels = data.hourly.map(point => point.key);
+      const hourlyPages = data.hourly.map(point => point.pages);
+      drawBarChart('hourlyChart', hourlyLabels, hourlyPages);
+    }});
   </script>
 </body>
 </html>
