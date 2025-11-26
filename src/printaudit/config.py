@@ -90,17 +90,41 @@ def parse_config(path: Path | None = None) -> Config:
     conf_path = discover_config_file(path)
     raw: dict[str, str] = {}
 
+    # Lightweight parser with optional [section] support.
+    #
+    # - Lines before any section behave like the legacy flat key=value format.
+    # - Lines under [email] are exposed as "email.<key>" to preserve the
+    #   existing EmailSettings mapping.
+    # - Other sections use "section.key" as the raw key.
+    current_section: str | None = None
     with conf_path.open("r", encoding="utf-8") as handle:
         for lineno, line in enumerate(handle, start=1):
             stripped = line.strip()
             if not stripped or stripped.startswith("#"):
                 continue
+
+            # Section header, e.g. [core], [email], [costs]
+            if stripped.startswith("[") and stripped.endswith("]"):
+                name = stripped[1:-1].strip().lower()
+                current_section = name or None
+                continue
+
             if "=" not in stripped:
                 raise ConfigError(
                     f"Invalid config line {lineno} in {conf_path}: {line!r}"
                 )
             key, value = stripped.split("=", 1)
-            raw[key.strip().lower()] = value.strip()
+            key = key.strip().lower()
+            value = value.strip()
+
+            if current_section is None:
+                full_key = key
+            elif current_section == "email":
+                full_key = f"email.{key}"
+            else:
+                full_key = f"{current_section}.{key}"
+
+            raw[full_key] = value
 
     config = Config()
     if "page_log_path" in raw:

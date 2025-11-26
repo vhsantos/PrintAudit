@@ -1,0 +1,26 @@
+# Example PrintAudit configuration (install to /etc/printaudit/printaudit.conf)
+
+[core]
+page_log_path=/var/log/cups/page_log
+work_start=7
+work_end=22
+enabled_sections=queue,queue_user,user,temporal,job,cost
+outputs=cli,csv,html,email
+cli_mode=rich
+cli_max_rows=15
+csv_dir=/var/spool/printaudit/reports
+html_path=/var/spool/printaudit/reports/printaudit.html
+
+# Optional cost inference hints
+# cost_rule.marketing=hp-color -> marketing
+
+[email]
+enabled=false
+smtp_host=localhost
+smtp_port=25
+smtp_user=
+smtp_password=
+use_tls=false
+recipients=
+attach_csv=true
+attach_html=true
