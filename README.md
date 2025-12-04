@@ -46,10 +46,10 @@ PrintAudit searches for configuration files in this order:
 1. Copy the sample configuration:
 
    ```bash
-   sudo cp printaudit.conf.sample /etc/printaudit/printaudit.conf
+   sudo cp printaudit.conf.sample /etc/printaudit.conf
    ```
 
-2. Edit `/etc/printaudit/printaudit.conf` and adjust:
+2. Edit `/etc/printaudit.conf` and adjust:
    - `page_log_path`: Path to your CUPS page_log file
    - `work_start` / `work_end`: Business hours (7-22 = 7 AM to 10 PM)
    - `outputs`: Comma-separated list of output modules
@@ -220,6 +220,13 @@ printaudit --start-date 2025-04-01 --end-date 2025-04-30
 ```bash
 printaudit --outputs html
 ```
+
+### Sample Report Output
+
+See example reports to understand the output format:
+
+- [Text Report Example](docs/report_example.txt) - Plain text CLI output example
+- [HTML Report Example](docs/report_example.html) - Formatted HTML report example
 
 ## Requirements
 

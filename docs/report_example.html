@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>PrintAudit Report</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 2rem;
+        background: #f5f5f5;
+      }
+      section {
+        margin-bottom: 2rem;
+        background: #fff;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 0.35rem 0.5rem;
+        border-bottom: 1px solid #ddd;
+      }
+      h1 {
+        margin-bottom: 0;
+      }
+      .chart-container {
+        position: relative;
+        width: 100%;
+        height: 200px;
+      }
+      canvas {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>PrintAudit Executive Summary</h1>
+    <p>Requests: 5458 | Pages: 8064 | Window: 2025-04-01 → 2025-04-30</p>
+
+    <section>
+      <h2>Queue Analysis</h2>
+      <div class="chart-container">
+        <canvas id="queueChart"></canvas>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Queue</th>
+            <th>%Req</th>
+            <th>%Pages</th>
+            <th>Req</th>
+            <th>Pages</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>HP_LaserJet_Pro_M404dn</td>
+            <td>76.44</td>
+            <td>76.4</td>
+            <td>4172</td>
+            <td>6161</td>
+          </tr>
+          <tr>
+            <td>Canon_PIXMA_MX492</td>
+            <td>15.41</td>
+            <td>15.05</td>
+            <td>841</td>
+            <td>1214</td>
+          </tr>
+          <tr>
+            <td>Brother_MFC_L2750DW</td>
+            <td>8.15</td>
+            <td>8.54</td>
+            <td>445</td>
+            <td>689</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>User Analysis</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Requests</th>
+            <th>Pages</th>
+            <th>Pages/Request</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>bob</td>
+            <td>841</td>
+            <td>1214</td>
+            <td>1.44</td>
+          </tr>
+          <tr>
+            <td>accounting3</td>
+            <td>850</td>
+            <td>1177</td>
+            <td>1.38</td>
+          </tr>
+          <tr>
+            <td>grace</td>
+            <td>652</td>
+            <td>958</td>
+            <td>1.47</td>
+          </tr>
+          <tr>
+            <td>accounting2</td>
+            <td>603</td>
+            <td>952</td>
+            <td>1.58</td>
+          </tr>
+          <tr>
+            <td>henry</td>
+            <td>578</td>
+            <td>895</td>
+            <td>1.55</td>
+          </tr>
+          <tr>
+            <td>accounting4</td>
+            <td>562</td>
+            <td>877</td>
+            <td>1.56</td>
+          </tr>
+          <tr>
+            <td>accounting1</td>
+            <td>584</td>
+            <td>870</td>
+            <td>1.49</td>
+          </tr>
+          <tr>
+            <td>frank</td>
+            <td>566</td>
+            <td>807</td>
+            <td>1.43</td>
+          </tr>
+          <tr>
+            <td>alice</td>
+            <td>222</td>
+            <td>314</td>
+            <td>1.41</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Temporal Analysis</h2>
+      <div class="chart-container">
+        <canvas id="hourlyChart"></canvas>
+      </div>
+    </section>
+
+    <section>
+      <h2>Job & Copy Distribution</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Bucket</th>
+            <th>% Requests</th>
+            <th>Requests</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>0-10</td>
+            <td>99.27</td>
+            <td>5418</td>
+          </tr>
+          <tr>
+            <td>other</td>
+            <td>0.73</td>
+            <td>40</td>
+          </tr>
+        </tbody>
+      </table>
+      <h3>Copies</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Bucket</th>
+            <th>% Requests</th>
+            <th>Requests</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>100.0</td>
+            <td>5458</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Cost Analysis</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Label</th>
+            <th>Pages</th>
+            <th>Amount</th>
+            <th>Top Users</th>
+            <th>Top Queues</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>accounting</td>
+            <td>3876</td>
+            <td>77.52</td>
+            <td>
+              accounting3:1177, accounting2:952, accounting4:877,
+              accounting1:870
+            </td>
+            <td>HP_LaserJet_Pro_M404dn:3501, Brother_MFC_L2750DW:375</td>
+          </tr>
+          <tr>
+            <td>unassigned</td>
+            <td>2660</td>
+            <td>53.2</td>
+            <td>grace:958, henry:895, frank:807</td>
+            <td>HP_LaserJet_Pro_M404dn:2660</td>
+          </tr>
+          <tr>
+            <td>sales</td>
+            <td>1214</td>
+            <td>24.28</td>
+            <td>bob:1214</td>
+            <td>Canon_PIXMA_MX492:1214</td>
+          </tr>
+          <tr>
+            <td>it</td>
+            <td>314</td>
+            <td>6.28</td>
+            <td>alice:314</td>
+            <td>Brother_MFC_L2750DW:314</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Media & Clients</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Media</th>
+            <th>Pages</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>unknown</td>
+            <td>8064</td>
+          </tr>
+        </tbody>
+      </table>
+      <h3>Clients</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Client</th>
+            <th>Pages</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>192.168.10.32</td>
+            <td>1214</td>
+          </tr>
+          <tr>
+            <td>192.168.10.61</td>
+            <td>1177</td>
+          </tr>
+          <tr>
+            <td>192.168.10.27</td>
+            <td>958</td>
+          </tr>
+          <tr>
+            <td>192.168.10.62</td>
+            <td>952</td>
+          </tr>
+          <tr>
+            <td>192.168.10.25</td>
+            <td>895</td>
+          </tr>
+          <tr>
+            <td>192.168.10.63</td>
+            <td>877</td>
+          </tr>
+          <tr>
+            <td>192.168.10.54</td>
+            <td>870</td>
+          </tr>
+          <tr>
+            <td>192.168.10.29</td>
+            <td>807</td>
+          </tr>
+          <tr>
+            <td>192.168.10.28</td>
+            <td>314</td>
+          </tr>
+        </tbody>
+      </table>
+      <h3>Document Types</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Extension</th>
+            <th>Pages</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>frx</td>
+            <td>2281</td>
+          </tr>
+          <tr>
+            <td>unknown</td>
+            <td>1753</td>
+          </tr>
+          <tr>
+            <td>rpt</td>
+            <td>1370</td>
+          </tr>
+          <tr>
+            <td>xlsx</td>
+            <td>831</td>
+          </tr>
+          <tr>
+            <td>xls</td>
+            <td>672</td>
+          </tr>
+          <tr>
+            <td>pdf</td>
+            <td>345</td>
+          </tr>
+          <tr>
+            <td>cgi</td>
+            <td>335</td>
+          </tr>
+          <tr>
+            <td>html</td>
+            <td>203</td>
+          </tr>
+          <tr>
+            <td>docx</td>
+            <td>131</td>
+          </tr>
+          <tr>
+            <td>txt</td>
+            <td>74</td>
+          </tr>
+          <tr>
+            <td>doc</td>
+            <td>29</td>
+          </tr>
+          <tr>
+            <td>xlsm</td>
+            <td>19</td>
+          </tr>
+          <tr>
+            <td>pptx</td>
+            <td>15</td>
+          </tr>
+          <tr>
+            <td>csv</td>
+            <td>4</td>
+          </tr>
+          <tr>
+            <td>htm</td>
+            <td>2</td>
+          </tr>
+        </tbody>
+      </table>
+      <h3>Duplex</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Mode</th>
+            <th>Pages</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>unknown</td>
+            <td>8064</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      const data = {
+        queue: [
+          {
+            queue: "HP_LaserJet_Pro_M404dn",
+            requests_pct: 76.44,
+            pages_pct: 76.4,
+            requests: 4172,
+            pages: 6161,
+          },
+          {
+            queue: "Canon_PIXMA_MX492",
+            requests_pct: 15.41,
+            pages_pct: 15.05,
+            requests: 841,
+            pages: 1214,
+          },
+          {
+            queue: "Brother_MFC_L2750DW",
+            requests_pct: 8.15,
+            pages_pct: 8.54,
+            requests: 445,
+            pages: 689,
+          },
+        ],
+        users: [
+          { user: "bob", requests: 841, pages: 1214, pages_per_request: 1.44 },
+          {
+            user: "accounting3",
+            requests: 850,
+            pages: 1177,
+            pages_per_request: 1.38,
+          },
+          { user: "grace", requests: 652, pages: 958, pages_per_request: 1.47 },
+          {
+            user: "accounting2",
+            requests: 603,
+            pages: 952,
+            pages_per_request: 1.58,
+          },
+          { user: "henry", requests: 578, pages: 895, pages_per_request: 1.55 },
+          {
+            user: "accounting4",
+            requests: 562,
+            pages: 877,
+            pages_per_request: 1.56,
+          },
+          {
+            user: "accounting1",
+            requests: 584,
+            pages: 870,
+            pages_per_request: 1.49,
+          },
+          { user: "frank", requests: 566, pages: 807, pages_per_request: 1.43 },
+          { user: "alice", requests: 222, pages: 314, pages_per_request: 1.41 },
+        ],
+        hourly: [
+          { key: "07:00", requests: 105, pages: 34, within_hours: true },
+          { key: "08:00", requests: 1050, pages: 547, within_hours: true },
+          { key: "09:00", requests: 4303, pages: 7483, within_hours: true },
+        ],
+        daily: [
+          { key: "2025-04-01", requests: 331, pages: 578, within_hours: null },
+          { key: "2025-04-02", requests: 274, pages: 311, within_hours: null },
+          { key: "2025-04-03", requests: 426, pages: 472, within_hours: null },
+          { key: "2025-04-04", requests: 333, pages: 361, within_hours: null },
+          { key: "2025-04-07", requests: 337, pages: 348, within_hours: null },
+          { key: "2025-04-08", requests: 216, pages: 259, within_hours: null },
+          { key: "2025-04-09", requests: 313, pages: 359, within_hours: null },
+          { key: "2025-04-10", requests: 204, pages: 240, within_hours: null },
+          { key: "2025-04-11", requests: 264, pages: 387, within_hours: null },
+          { key: "2025-04-14", requests: 308, pages: 501, within_hours: null },
+          { key: "2025-04-15", requests: 364, pages: 423, within_hours: null },
+          { key: "2025-04-16", requests: 275, pages: 320, within_hours: null },
+          { key: "2025-04-17", requests: 207, pages: 222, within_hours: null },
+          { key: "2025-04-21", requests: 236, pages: 264, within_hours: null },
+          { key: "2025-04-22", requests: 141, pages: 149, within_hours: null },
+          { key: "2025-04-23", requests: 176, pages: 200, within_hours: null },
+          { key: "2025-04-24", requests: 190, pages: 214, within_hours: null },
+          { key: "2025-04-25", requests: 196, pages: 222, within_hours: null },
+          { key: "2025-04-28", requests: 216, pages: 1736, within_hours: null },
+          { key: "2025-04-29", requests: 196, pages: 223, within_hours: null },
+          { key: "2025-04-30", requests: 255, pages: 275, within_hours: null },
+        ],
+        job_buckets: [
+          { label: "0-10", pct_requests: 99.27, request_count: 5418 },
+          { label: "other", pct_requests: 0.73, request_count: 40 },
+        ],
+        copy_buckets: [
+          { label: "1", pct_requests: 100.0, request_count: 5458 },
+        ],
+        cost: [
+          {
+            label: "accounting",
+            pages: 3876,
+            amount: 77.52,
+            per_user: [
+              ["accounting3", 1177],
+              ["accounting2", 952],
+              ["accounting4", 877],
+              ["accounting1", 870],
+            ],
+            per_queue: [
+              ["HP_LaserJet_Pro_M404dn", 3501],
+              ["Brother_MFC_L2750DW", 375],
+            ],
+          },
+          {
+            label: "unassigned",
+            pages: 2660,
+            amount: 53.2,
+            per_user: [
+              ["grace", 958],
+              ["henry", 895],
+              ["frank", 807],
+            ],
+            per_queue: [["HP_LaserJet_Pro_M404dn", 2660]],
+          },
+          {
+            label: "sales",
+            pages: 1214,
+            amount: 24.28,
+            per_user: [["bob", 1214]],
+            per_queue: [["Canon_PIXMA_MX492", 1214]],
+          },
+          {
+            label: "it",
+            pages: 314,
+            amount: 6.28,
+            per_user: [["alice", 314]],
+            per_queue: [["Brother_MFC_L2750DW", 314]],
+          },
+        ],
+        clients: [
+          { label: "192.168.10.32", pages: 1214 },
+          { label: "192.168.10.61", pages: 1177 },
+          { label: "192.168.10.27", pages: 958 },
+          { label: "192.168.10.62", pages: 952 },
+          { label: "192.168.10.25", pages: 895 },
+          { label: "192.168.10.63", pages: 877 },
+          { label: "192.168.10.54", pages: 870 },
+          { label: "192.168.10.29", pages: 807 },
+          { label: "192.168.10.28", pages: 314 },
+        ],
+        document_types: [
+          { label: "frx", pages: 2281 },
+          { label: "unknown", pages: 1753 },
+          { label: "rpt", pages: 1370 },
+          { label: "xlsx", pages: 831 },
+          { label: "xls", pages: 672 },
+          { label: "pdf", pages: 345 },
+          { label: "cgi", pages: 335 },
+          { label: "html", pages: 203 },
+          { label: "docx", pages: 131 },
+          { label: "txt", pages: 74 },
+          { label: "doc", pages: 29 },
+          { label: "xlsm", pages: 19 },
+          { label: "pptx", pages: 15 },
+          { label: "csv", pages: 4 },
+          { label: "htm", pages: 2 },
+        ],
+        media: [{ label: "unknown", pages: 8064 }],
+        duplex: [{ label: "unknown", pages: 8064 }],
+      };
+      document.addEventListener("DOMContentLoaded", function () {
+        const queueCtx = document.getElementById("queueChart");
+        if (queueCtx) {
+          new Chart(queueCtx, {
+            type: "bar",
+            data: {
+              labels: data.queue.slice(0, 10).map((row) => row.queue),
+              datasets: [
+                {
+                  label: "Pages",
+                  data: data.queue.slice(0, 10).map((row) => row.pages),
+                  backgroundColor: "#4a90e2",
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+            },
+          });
+        }
+
+        const hourlyCtx = document.getElementById("hourlyChart");
+        if (hourlyCtx) {
+          new Chart(hourlyCtx, {
+            type: "bar",
+            data: {
+              labels: data.hourly.map((point) => point.key),
+              datasets: [
+                {
+                  label: "Pages",
+                  data: data.hourly.map((point) => point.pages),
+                  backgroundColor: "#36a2eb",
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+            },
+          });
+        }
+      });
+    </script>
+  </body>
+</html>
