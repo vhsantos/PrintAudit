@@ -13,6 +13,12 @@
 
 ## Installation
 
+### From PyPI
+
+```bash
+pip install printaudit
+```
+
 ### From Source
 
 ```bash
