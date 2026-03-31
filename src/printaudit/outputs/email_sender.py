@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+from io import StringIO
 from pathlib import Path
 
 from ..analysis import AnalysisReport
 from ..emailer import EmailClient, EmailDeliveryError
-from .base import OutputModule, register_output
+from .base import OutputContext, OutputModule, register_output
+from .cli import CliOutput
 
 
 @register_output("email")
@@ -28,6 +30,10 @@ class EmailOutput(OutputModule):
             f"Pages: {totals.pages}\n"
             f"Window: {start_date} -> {end_date}\n"
         )
+        if settings.report_in_body:
+            cli_output = self._render_cli_output(report).strip()
+            if cli_output:
+                body = f"{body}\n{cli_output}\n"
         try:
             client.send_report(subject, body, attachments)
         except EmailDeliveryError as exc:  # pragma: no cover - network heavy
@@ -43,3 +49,13 @@ class EmailOutput(OutputModule):
             if path.suffix in {".htm", ".html"} and settings.attach_html:
                 selected.append(path)
         return selected
+
+    def _render_cli_output(self, report: AnalysisReport) -> str:
+        buffer = StringIO()
+        cli_context = OutputContext(
+            config=self.context.config,
+            attachments=list(self.context.attachments),
+            stdout=buffer,
+        )
+        CliOutput(cli_context).render(report)
+        return buffer.getvalue()

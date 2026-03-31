@@ -24,6 +24,7 @@ subject=PrintAudit Report
 from=
 attach_csv=true
 attach_html=true
+report_in_body=true
 
 [costs]
 # Basic cost settings (unitless numbers, interpreted as your local currency)
