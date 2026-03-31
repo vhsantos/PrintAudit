@@ -13,6 +13,7 @@ def test_config_defaults():
     assert config.cost_default == 0.0
     assert config.currency_symbol == ""
     assert config.currency_code == ""
+    assert config.email.report_in_body is True
 
 
 def test_parse_config_missing_file(tmp_path):
@@ -93,3 +94,20 @@ printer.Printer02=0.05
     assert "printer01" in config.cost_printer_rates
     assert config.cost_printer_rates["printer01"] == 0.01
     assert config.cost_printer_rates["printer02"] == 0.05
+
+
+def test_parse_config_email_report_in_body(tmp_path):
+    """Test parsing email report_in_body setting."""
+    config_file = tmp_path / "test.conf"
+    config_file.write_text(
+        """[core]
+page_log_path=/var/log/cups/page_log
+
+[email]
+enabled=true
+report_in_body=true
+"""
+    )
+    config = parse_config(config_file)
+    assert config.email.enabled is True
+    assert config.email.report_in_body is True

@@ -94,6 +94,7 @@ subject=PrintAudit Report
 from=printaudit@example.com
 attach_csv=true
 attach_html=true
+report_in_body=true       # Include full report text in email body
 ```
 
 #### `[costs]` - Cost Calculation
